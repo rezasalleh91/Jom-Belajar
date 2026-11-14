@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffb703">
+<title>Jom Belajar! ABC & 123</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Jom Belajar">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+  :root{
+    --sun:#ffb703; --orange:#fb8500; --sky:#8ecae6; --blue:#219ebc; --navy:#023047;
+    --green:#52b788; --red:#ef476f; --cream:#fffaf0;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Baloo 2","Comic Sans MS","Chalkboard SE","Trebuchet MS",system-ui,sans-serif;
+    background:linear-gradient(180deg,var(--sky) 0%,#bde0fe 60%,#caffbf 100%);
+    color:var(--navy); display:flex; flex-direction:column; align-items:center; overflow:hidden;
+  }
+  .screen{display:none;flex-direction:column;align-items:center;justify-content:center;
+    width:100%;max-width:560px;height:100%;padding:16px;gap:14px;text-align:center}
+  .screen.active{display:flex}
+  h1{font-size:clamp(2rem,9vw,3.2rem);margin:0;color:#fff;
+    text-shadow:3px 3px 0 var(--orange),6px 6px 0 var(--navy)}
+  .sub{font-size:1.1rem;margin:0 0 6px;font-weight:700}
+  .btn{border:none;border-radius:22px;font:inherit;font-weight:800;cursor:pointer;
+    box-shadow:0 6px 0 rgba(2,48,71,.35);transition:transform .08s, box-shadow .08s}
+  .btn:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(2,48,71,.35)}
+  .mode{width:100%;padding:8px 4px;font-size:1.05rem;flex-direction:column;gap:2px !important;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px}
+  .mode.abc{background:var(--orange)} .mode.num{background:var(--blue)} .mode.spell{background:#8338ec}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+  .mode.pop{background:var(--red)}
+  .mode.race{background:var(--navy)} .mode.arch{background:#2d6a4f} .mode.mem{background:#b5179e}
+  .mode.shape{background:#3a86ff} .mode.pat{background:#e85d04} .mode.trace{background:#6a4c93}
+  .modes{gap:10px !important}
+  .answers.mem{grid-template-columns:repeat(4,1fr);gap:8px}
+  .memcard{aspect-ratio:3/4;font-size:clamp(1.6rem,8vw,2.4rem);background:#3a86ff !important;color:#fff}
+  .memcard.open{background:#fff !important;color:var(--navy)}
+  .memcard.done{background:var(--green) !important;color:#fff;pointer-events:none}
+  .ans svg{width:70%;height:70%}
+  .seq{font-size:clamp(1.8rem,9vw,2.8rem);letter-spacing:4px}
+  .target{position:absolute;top:16px;width:86px;height:86px;margin-left:-43px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0 22%,var(--red) 23% 44%,#fff 45% 66%,var(--red) 67%);
+    display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .target b{background:#fff;color:var(--navy);border-radius:12px;padding:0 8px;font-size:1.7rem;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+  .target.hit{animation:pop .5s;outline:6px solid var(--sun)}
+  .bow{position:absolute;bottom:10px;font-size:52px;margin-left:-30px;pointer-events:none}
+  .bow span{display:inline-block;transform:rotate(-45deg)}
+  .arrow{position:absolute;width:6px;height:46px;margin-left:-3px;background:var(--navy);border-radius:3px;pointer-events:none}
+  .arrow::before{content:"";position:absolute;top:-12px;left:-7px;border:10px solid transparent;border-bottom:14px solid var(--navy);border-top:0}
+  .aimline{position:absolute;top:0;bottom:70px;width:2px;margin-left:-1px;background:repeating-linear-gradient(180deg,rgba(2,48,71,.35) 0 8px,transparent 8px 16px);pointer-events:none}
+  .field canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+  .road{position:absolute;inset:0;background-color:#4a4e69;
+    background-image:linear-gradient(90deg,#f4d35e 0 6px,transparent 6px calc(100% - 6px),#f4d35e calc(100% - 6px)),
+      repeating-linear-gradient(180deg,rgba(255,255,255,.85) 0 34px,transparent 34px 68px),
+      repeating-linear-gradient(180deg,rgba(255,255,255,.85) 0 34px,transparent 34px 68px);
+    background-size:100% 100%,6px 100%,6px 100%;background-repeat:no-repeat,repeat-y,repeat-y;
+    background-position:0 0,33.33% 0,66.66% 0}
+  .car{position:absolute;bottom:14px;width:33.33%;text-align:center;font-size:64px;line-height:70px;height:70px;
+    transition:left .15s ease-out;pointer-events:none}
+  .car span{display:inline-block;transform:rotate(90deg)}
+  .gates{position:absolute;left:0;right:0;height:64px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 8px;pointer-events:none}
+  .gate{background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    font-size:2rem;font-weight:900;color:var(--navy);box-shadow:0 5px 0 rgba(0,0,0,.25)}
+  .gate.good{background:var(--green);color:#fff} .gate.bad{background:var(--red);color:#fff}
+  .hint{position:absolute;bottom:30px;font-size:2rem;color:rgba(255,255,255,.55);pointer-events:none}
+  .car.bump{animation:shake .4s}
+  .field{position:relative;width:100%;flex:1;min-height:260px;overflow:hidden;border-radius:26px;
+    background:rgba(255,255,255,.35);touch-action:none;display:none}
+  .balloon{position:absolute;left:0;top:0;width:76px;height:92px;border-radius:50% 50% 48% 48% / 42% 42% 58% 58%;
+    box-shadow:inset -10px -12px 0 rgba(0,0,0,.12), inset 10px 10px 0 rgba(255,255,255,.35);cursor:pointer;will-change:transform}
+  .balloon::after{content:"";position:absolute;left:37px;top:92px;width:2px;height:40px;background:rgba(2,48,71,.45)}
+  .balloon.popped{animation:burst .22s forwards}
+  @keyframes burst{to{transform:var(--t) scale(1.6);opacity:0}}
+  .balloon.nope{animation:none;filter:grayscale(.6) brightness(.8)}
+  .popname{font-size:clamp(2.4rem,11vw,3.4rem);font-weight:900;letter-spacing:2px;
+    -webkit-text-stroke:2px var(--navy);paint-order:stroke fill}
+  .dots{font-size:2rem;letter-spacing:6px}
+  .slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .slot{min-width:1.7em;min-height:1.6em;padding:2px 8px;border:4px dashed var(--orange);border-radius:14px;
+    color:var(--navy);text-transform:uppercase;letter-spacing:1px;background:#fff}
+  .slot.filled{border:4px solid var(--green);animation:pop .4s}
+  .ans.tile{aspect-ratio:auto;padding:16px 4px;font-size:clamp(1.6rem,8vw,2.4rem);text-transform:uppercase}
+  .ans.used{opacity:.25;pointer-events:none}
+  .mode span{font-size:1.9rem}
+  .langs{display:flex;gap:10px;justify-content:center}
+  .lang{padding:10px 18px;font-size:1.1rem;background:#fff;color:var(--navy)}
+  .lang.on{background:var(--green);color:#fff}
+  .topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:center;padding:10px 14px;max-width:560px;margin:0 auto}
+  .icon{width:52px;height:52px;font-size:1.6rem;background:#fff;padding:0}
+  .stars{font-size:1.3rem;font-weight:800;background:#fff;border-radius:18px;padding:8px 14px;
+    box-shadow:0 4px 0 rgba(2,48,71,.25)}
+  .progress{width:100%;height:14px;background:rgba(255,255,255,.6);border-radius:10px;overflow:hidden;margin-top:56px}
+  .progress div{height:100%;width:0;background:var(--sun);transition:width .3s}
+  .card{background:var(--cream);border-radius:30px;width:100%;padding:18px 10px;
+    box-shadow:0 8px 0 rgba(2,48,71,.2);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+  .question{font-size:1.3rem;font-weight:800;margin:0}
+  .picture{font-size:clamp(5rem,26vw,8rem);line-height:1.1}
+  .picture.small{font-size:clamp(2.2rem,10vw,3.4rem);display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:420px}
+  .word{font-size:2rem;font-weight:800;letter-spacing:2px;min-height:2.6rem}
+  .word .first{color:var(--orange)}
+  .hidden-first{color:transparent;border-bottom:4px dashed var(--orange)}
+  .answers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+  .ans{aspect-ratio:1/1;font-size:clamp(2.4rem,12vw,3.6rem);color:#fff}
+  .ans:nth-child(5n+1){background:var(--red)} .ans:nth-child(5n+2){background:var(--green)} .ans:nth-child(5n+3){background:#8338ec}
+  .ans:nth-child(5n+4){background:var(--blue)} .ans:nth-child(5n){background:var(--orange)}
+  .ans.wrong{animation:shake .4s;opacity:.35}
+  .ans.right{animation:pop .5s;outline:6px solid var(--sun)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+  @keyframes pop{50%{transform:scale(1.15)}}
+  .bounce{animation:bounce 1.2s infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .big{font-size:5rem}
+  .result{font-size:2.6rem;letter-spacing:4px}
+  .play{padding:16px 34px;font-size:1.5rem;background:var(--orange);color:#fff}
+  .home{padding:12px 26px;font-size:1.2rem;background:#fff;color:var(--navy)}
+  .codebox{width:100%;padding:14px;font:inherit;font-size:1.5rem;text-align:center;border-radius:18px;
+    border:4px solid var(--orange);text-transform:uppercase;letter-spacing:3px;user-select:text;-webkit-user-select:text}
+  .msg{min-height:1.4rem;font-weight:800;margin:0}
+  .msg.bad{color:var(--red)} .msg.ok{color:#2d6a4f}
+  .key{padding:10px 18px;font-size:1rem;background:#fff;color:var(--navy)}
+  .badge{font-weight:800;background:var(--green);color:#fff;border-radius:14px;padding:6px 14px}
+  footer{font-size:.8rem;opacity:.7;margin-top:6px}
+  .confetti{position:fixed;top:-20px;font-size:1.6rem;pointer-events:none;animation:fall linear forwards;z-index:9}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section id="home" class="screen active">
+  <div class="bounce" style="font-size:3.4rem">🦁</div>
+  <h1 style="font-size:clamp(1.8rem,8vw,2.8rem)">Jom Belajar!</h1>
+  <p class="sub" id="homeSub">Pilih permainan</p>
+  <div class="modes">
+  <button class="btn mode abc" onclick="startGame('abc')"><span>🔤</span> ABC</button>
+  <button class="btn mode num" onclick="startGame('num')"><span>🔢</span> 123</button>
+  <button class="btn mode spell" onclick="startGame('spell')"><span>✏️</span> <b id="spellLabel">Eja</b></button>
+  <button class="btn mode pop" onclick="startGame('pop')"><span>🎈</span> <b id="popLabel">Belon</b></button>
+  <button class="btn mode race" onclick="startGame('race')"><span>🏎️</span> <b id="raceLabel">Lumba Kereta</b></button>
+  <button class="btn mode arch" onclick="startGame('arch')"><span>🏹</span> <b id="archLabel">Memanah</b></button>
+  <button class="btn mode mem" onclick="startGame('memory')"><span>🃏</span> <b id="memLabel">Padan Kad</b></button>
+  <button class="btn mode shape" onclick="startGame('shape')"><span>🔷</span> <b id="shapeLabel">Bentuk</b></button>
+  <button class="btn mode pat" onclick="startGame('pattern')"><span>🔁</span> <b id="patLabel">Corak</b></button>
+  <button class="btn mode trace" onclick="startGame('trace')"><span>✍️</span> <b id="traceLabel">Surih</b></button>
+  </div>
+  <div class="langs">
+    <button class="btn lang on" id="lang-ms" onclick="setLang('ms')">🇲🇾 BM</button>
+    <button class="btn lang" id="lang-en" onclick="setLang('en')">🇬🇧 English</button>
+  </div>
+  <button class="btn key" id="homeKey" onclick="showLock(false)">🔑 Masukkan kod</button>
+  <div class="badge" id="fullBadge" style="display:none">✅ Versi penuh</div>
+  <footer id="footer"></footer>
+</section>
+
+<!-- ============ GAME ============ -->
+<section id="game" class="screen">
+  <div class="topbar">
+    <button class="btn icon" onclick="goHome()" aria-label="Home">🏠</button>
+    <div class="stars">⭐ <span id="score">0</span></div>
+    <button class="btn icon" id="soundBtn" onclick="toggleSound()" aria-label="Sound">🔊</button>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="card" onclick="sayQuestion()">
+    <p class="question" id="question"></p>
+    <div class="picture" id="picture"></div>
+    <div class="word" id="word"></div>
+  </div>
+  <div class="answers" id="answers"></div>
+  <div class="field" id="field"></div>
+</section>
+
+<!-- ============ LOCK ============ -->
+<section id="lock" class="screen">
+  <div class="big">🔒</div>
+  <h1 id="lockTitle" style="font-size:clamp(1.6rem,7vw,2.4rem)">Buka semua soalan!</h1>
+  <p class="sub" id="lockText"></p>
+  <input class="codebox" id="codeInput" placeholder="KOD" autocomplete="off" autocapitalize="characters">
+  <p class="msg" id="lockMsg"></p>
+  <button class="btn play" id="unlockBtn" onclick="tryUnlock()">Buka</button>
+  <a class="btn key" id="buyBtn" href="https://beacons.ai/" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">🛒 Beli kod</a>
+  <button class="btn home" onclick="goHome()">🏠</button>
+</section>
+
+<!-- ============ END ============ -->
+<section id="end" class="screen">
+  <div class="big bounce" id="endEmoji">🏆</div>
+  <h1 id="endTitle">Hebat!</h1>
+  <div class="result" id="endStars"></div>
+  <p class="sub" id="endText"></p>
+  <button class="btn play" id="againBtn" onclick="startGame(state.mode)">Main lagi</button>
+  <button class="btn home" id="homeBtn" onclick="goHome()">🏠</button>
+</section>
+
+<script>
+/* ===== Change this to your channel / brand name ===== */
+const BRAND = "Jom Belajar";
+const ROUNDS = 10;
+/* Free version: number of questions before the lock screen */
+const FREE_QUESTIONS = 3;
+/* Your shop link (Beacons / Play Store) */
+const BUY_LINK = "https://beacons.ai/";
+/* Hash of the unlock code. Do not put the real code here. */
+const CODE_HASH = 402836868;
+
+const WORDS = {
+  en: [
+    ["Apple","🍎"],["Ball","⚽"],["Cat","🐱"],["Dog","🐶"],["Egg","🥚"],["Fish","🐟"],
+    ["Goat","🐐"],["Hat","🎩"],["Ice cream","🍦"],["Juice","🧃"],["Kite","🪁"],["Lion","🦁"],
+    ["Monkey","🐒"],["Nose","👃"],["Orange","🍊"],["Pig","🐷"],["Queen","👑"],["Rabbit","🐰"],
+    ["Sun","☀️"],["Tiger","🐯"],["Umbrella","☂️"],["Van","🚐"],["Watermelon","🍉"],
+    ["Yo-yo","🪀"],["Zebra","🦓"]
+  ],
+  ms: [
+    ["Ayam","🐔"],["Bola","⚽"],["Cawan","☕"],["Dadu","🎲"],["Epal","🍎"],["Feri","⛴️"],
+    ["Gajah","🐘"],["Harimau","🐯"],["Ikan","🐟"],["Jam","⌚"],["Kucing","🐱"],["Lebah","🐝"],
+    ["Monyet","🐒"],["Nanas","🍍"],["Oren","🍊"],["Payung","☂️"],["Rumah","🏠"],["Singa","🦁"],
+    ["Tikus","🐭"],["Ular","🐍"],["Van","🚐"],["Wau","🪁"],["Yoyo","🪀"],["Zirafah","🦒"]
+  ]
+};
+/* Spelling: BM uses suku kata (syllables), English uses letters */
+const SPELL = {
+  ms: [
+    ["bola","⚽",["bo","la"]],["buku","📖",["bu","ku"]],["kuda","🐴",["ku","da"]],["mata","👁️",["ma","ta"]],
+    ["kaki","🦶",["ka","ki"]],["roti","🍞",["ro","ti"]],["susu","🥛",["su","su"]],["batu","🪨",["ba","tu"]],
+    ["ikan","🐟",["i","kan"]],["pisang","🍌",["pi","sang"]],["rumah","🏠",["ru","mah"]],["gajah","🐘",["ga","jah"]],
+    ["kucing","🐱",["ku","cing"]],["bunga","🌸",["bu","nga"]],["epal","🍎",["e","pal"]],["topi","🧢",["to","pi"]],
+    ["kereta","🚗",["ke","re","ta"]],["kelapa","🥥",["ke","la","pa"]],["sepatu","👟",["se","pa","tu"]],["harimau","🐯",["ha","ri","mau"]]
+  ],
+  en: [
+    ["cat","🐱"],["dog","🐶"],["sun","☀️"],["pig","🐷"],["bus","🚌"],["hat","🎩"],["bed","🛏️"],["cup","🥤"],
+    ["fox","🦊"],["egg","🥚"],["box","📦"],["ant","🐜"],["bat","🦇"],["hen","🐔"],["owl","🦉"],["cow","🐮"],
+    ["car","🚗"],["bag","👜"],["fish","🐟"],["frog","🐸"]
+  ].map(([w,e])=>[w,e,w.split("")])
+};
+
+/* Balloon game colours (same order in both languages) */
+const COLORS = {
+  ms:[["MERAH","#ef476f"],["BIRU","#219ebc"],["KUNING","#ffd166"],["HIJAU","#52b788"],["UNGU","#8338ec"],["OREN","#fb8500"]],
+  en:[["RED","#ef476f"],["BLUE","#219ebc"],["YELLOW","#ffd166"],["GREEN","#52b788"],["PURPLE","#8338ec"],["ORANGE","#fb8500"]]
+};
+const POP_NEED = 3;
+
+/* Shapes: id, BM name, English name */
+const SHAPES = [
+  ["circle","BULATAN","CIRCLE"],["square","SEGI EMPAT SAMA","SQUARE"],["triangle","SEGI TIGA","TRIANGLE"],
+  ["star","BINTANG","STAR"],["heart","HATI","HEART"],["rect","SEGI EMPAT TEPAT","RECTANGLE"],["oval","BUJUR","OVAL"]
+];
+function shapeSVG(id,color){
+  const f=`fill="${color}" stroke="#023047" stroke-width="4"`;
+  const d={
+    circle:`<circle cx="50" cy="50" r="40" ${f}/>`,
+    square:`<rect x="12" y="12" width="76" height="76" rx="4" ${f}/>`,
+    triangle:`<polygon points="50,8 92,88 8,88" ${f} stroke-linejoin="round"/>`,
+    star:`<polygon points="50,6 61,38 95,38 67,58 78,92 50,71 22,92 33,58 5,38 39,38" ${f} stroke-linejoin="round"/>`,
+    heart:`<path d="M50 88 C10 60 4 34 22 20 C36 10 48 18 50 30 C52 18 64 10 78 20 C96 34 90 60 50 88Z" ${f}/>`,
+    rect:`<rect x="6" y="28" width="88" height="44" rx="4" ${f}/>`,
+    oval:`<ellipse cx="50" cy="50" rx="44" ry="28" ${f}/>`
+  };
+  return `<svg viewBox="0 0 100 100">${d[id]}</svg>`;
+}
+const SHAPE_COLORS=["#ef476f","#ffd166","#52b788","#8ecae6","#fb8500","#b5179e"];
+
+/* Patterns */
+const PAT_ITEMS=[["🍎","🍌","🍇"],["🐱","🐶","🐰"],["🔴","🔵","🟡"],["⭐","🌙","☀️"],["🚗","🚌","🚲"],["🌸","🍀","🍄"]];
+const PAT_TYPES=[[0,1],[0,0,1],[0,1,1],[0,1,2]];
+
+/* Tracing paths (points from 0..1). Easy to harder. */
+const TRACE_PATHS = (()=>{
+  const line=(a,b,n=24)=>Array.from({length:n+1},(_,i)=>[a[0]+(b[0]-a[0])*i/n,a[1]+(b[1]-a[1])*i/n]);
+  const poly=pts=>pts.slice(1).flatMap((p,i)=>line(pts[i],p,14).slice(i?1:0));
+  const curve=(fn,n=60)=>Array.from({length:n+1},(_,i)=>fn(i/n));
+  return [
+    ["—", line([.12,.5],[.88,.5])],
+    ["|", line([.5,.1],[.5,.9])],
+    ["/", line([.2,.85],[.8,.15])],
+    ["⋀⋁", poly([[.08,.7],[.27,.3],[.46,.7],[.65,.3],[.84,.7]])],
+    ["∿", curve(t=>[.08+.84*t,.5+.22*Math.sin(t*Math.PI*3)])],
+    ["◯", curve(t=>[.5+.32*Math.sin(t*2*Math.PI),.5-.36*Math.cos(t*2*Math.PI)],70)],
+    ["□", poly([[.22,.2],[.78,.2],[.78,.8],[.22,.8],[.22,.2]])],
+    ["L", poly([[.32,.12],[.32,.86],[.72,.86]])],
+    ["V", poly([[.2,.14],[.5,.86],[.8,.14]])],
+    ["S", [...curve(t=>{const a=-Math.PI/6-t*(4*Math.PI/3); return [.5+.17*Math.cos(a),.33+.17*Math.sin(a)];},40), ...curve(t=>{const a=-Math.PI/2+t*(4*Math.PI/3); return [.5+.17*Math.cos(a),.67+.17*Math.sin(a)];},40).slice(1)]]
+  ];
+})();
+
+const COUNT_ITEMS = ["🍎","🐟","⭐","🎈","🐤","🍌","🚗","🌸","🐞","🍓"];
+const NUM_WORDS = {
+  en:["zero","one","two","three","four","five","six","seven","eight","nine","ten"],
+  ms:["kosong","satu","dua","tiga","empat","lima","enam","tujuh","lapan","sembilan","sepuluh"]
+};
+const TEXT = {
+  ms:{ sub:"Pilih permainan", qAbc:"Huruf apa di depan?", qNum:"Berapa banyak?",
+       good:["Bagus!","Pandai!","Hebat!","Syabas!"], tryAgain:"Cuba lagi!",
+       again:"Main lagi", endGreat:"Hebat!", endOk:"Bagus!", endTry:"Cuba lagi!",
+       endText:(s,n)=>`Kamu dapat ${s} daripada ${n} bintang!`, voice:"ms-MY",
+       spell:"Eja", qSpell:"Susun suku kata!", pop:"Belon",
+       popQ:c=>`Pecahkan belon ${c}!`, popTitle:"Pecahkan belon",
+       race:"Lumba Kereta", raceQ:{letter:"Pandu ke huruf", number:"Pandu ke nombor", sum:"Pandu ke jawapan"}, plus:"tambah",
+       arch:"Memanah", archQ:{after:"Panah nombor selepas", before:"Panah nombor sebelum"}, tapShoot:"Tekan untuk memanah!",
+       mem:"Padan Kad", memQ:"Padankan gambar dengan huruf!",
+       shape:"Bentuk", shapeQ:"Cari bentuk",
+       pat:"Corak", patQ:"Apa yang seterusnya?",
+       trace:"Surih", traceQ:"Surih garisan dengan jari!",
+       enterCode:"🔑 Masukkan kod", full:"✅ Versi penuh", lockTitle:"Buka semua soalan!",
+       lockText:"Versi percuma ada 3 soalan. Masukkan kod untuk main semua soalan dan semua permainan.",
+       unlock:"Buka", buy:"🛒 Beli kod", badCode:"Kod salah. Cuba lagi.", okCode:"Berjaya! Semua soalan dibuka 🎉" },
+  en:{ sub:"Pick a game", qAbc:"What letter does it start with?", qNum:"How many?",
+       good:["Great job!","Well done!","Awesome!","Super!"], tryAgain:"Try again!",
+       again:"Play again", endGreat:"Amazing!", endOk:"Good job!", endTry:"Keep trying!",
+       endText:(s,n)=>`You got ${s} out of ${n} stars!`, voice:"en-US",
+       spell:"Spell", qSpell:"Spell the word!", pop:"Balloons",
+       popQ:c=>`Pop the ${c} balloons!`, popTitle:"Pop the balloons",
+       race:"Car Race", raceQ:{letter:"Drive to the letter", number:"Drive to the number", sum:"Drive to the answer"}, plus:"plus",
+       arch:"Archery", archQ:{after:"Shoot the number after", before:"Shoot the number before"}, tapShoot:"Tap to shoot!",
+       mem:"Memory", memQ:"Match each picture to its letter!",
+       shape:"Shapes", shapeQ:"Find the",
+       pat:"Patterns", patQ:"What comes next?",
+       trace:"Tracing", traceQ:"Trace the line with your finger!",
+       enterCode:"🔑 Enter code", full:"✅ Full version", lockTitle:"Unlock all questions!",
+       lockText:"The free version has 3 questions. Enter your code to play every question in every game.",
+       unlock:"Unlock", buy:"🛒 Buy a code", badCode:"Wrong code. Try again.", okCode:"Unlocked! Enjoy every question 🎉" }
+};
+
+const state = { archSpeed:0, unlocked:false, resume:false, lang:"ms", mode:"abc", round:0, score:0, firstTry:true, locked:false, sound:true, current:null, deck:[] };
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); }
+
+/* ---------- sound (no files needed) ---------- */
+let audioCtx;
+function beep(freqs, dur=0.12, type="sine"){
+  if(!state.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type=type; o.frequency.value=f;
+      const t=audioCtx.currentTime+i*dur;
+      g.gain.setValueAtTime(0.18,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+dur);
+    });
+  }catch(e){}
+}
+const happySound = () => beep([523,659,784,1047],0.1,"triangle");
+const sadSound   = () => beep([300,220],0.15,"square");
+
+function speak(text){
+  if(!state.sound || !("speechSynthesis" in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = TEXT[state.lang].voice; u.rate = 0.85; u.pitch = 1.2;
+    const v = speechSynthesis.getVoices().find(v=>v.lang.replace("_","-").startsWith(state.lang==="ms"?"ms":"en"));
+    if(v) u.voice = v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function confetti(){
+  const bits=["⭐","🎉","✨","🎈","💛"];
+  for(let i=0;i<18;i++){
+    const c=document.createElement("div"); c.className="confetti";
+    c.textContent=bits[i%bits.length];
+    c.style.left=Math.random()*100+"vw";
+    c.style.animationDuration=(1.5+Math.random()*1.5)+"s";
+    document.body.appendChild(c); setTimeout(()=>c.remove(),3200);
+  }
+}
+
+/* ---------- settings ---------- */
+function setLang(l){
+  state.lang=l;
+  $("lang-ms").classList.toggle("on",l==="ms");
+  $("lang-en").classList.toggle("on",l==="en");
+  $("homeSub").textContent=TEXT[l].sub;
+  $("spellLabel").textContent=TEXT[l].spell;
+  $("popLabel").textContent=TEXT[l].pop;
+  $("raceLabel").textContent=TEXT[l].race;
+  $("archLabel").textContent=TEXT[l].arch; $("memLabel").textContent=TEXT[l].mem;
+  $("shapeLabel").textContent=TEXT[l].shape; $("patLabel").textContent=TEXT[l].pat;
+  $("traceLabel").textContent=TEXT[l].trace;
+  updateLockUI();
+  document.documentElement.lang=l;
+  try{ localStorage.setItem("jb-lang",l); }catch(e){}
+}
+function toggleSound(){
+  state.sound=!state.sound;
+  $("soundBtn").textContent=state.sound?"🔊":"🔇";
+  if(!state.sound && "speechSynthesis" in window) speechSynthesis.cancel();
+}
+function goHome(){ stopPop(); if("speechSynthesis" in window) speechSynthesis.cancel(); show("home"); }
+
+/* ---------- game flow ---------- */
+function startGame(mode){
+  state.mode=mode; state.round=0; state.score=0;
+  stopPop();
+  if(mode==="arch"){
+    state.deck=Array.from({length:ROUNDS},(_,i)=>i%2?"before":"after");
+    state.archSpeed = state.archSpeed || 1.6;
+  }
+  else if(mode==="memory") state.deck=[4,4,5,5,6];
+  else if(mode==="shape"){ state.deck=shuffle([...SHAPES,...shuffle(SHAPES)]).slice(0,ROUNDS); }
+  else if(mode==="pattern"){ state.deck=Array.from({length:ROUNDS},(_,i)=>PAT_TYPES[Math.min(3,Math.floor(i/3))]); }
+  else if(mode==="trace"){ state.deck=TRACE_PATHS.slice(); }
+  else if(mode==="race"){
+    const types=["letter","number","sum"];
+    state.deck=Array.from({length:ROUNDS},(_,i)=>types[i%3]);
+    state.raceSpeed = state.raceSpeed || 70;
+  }
+  else if(mode==="pop"){
+    state.deck=[]; let last=-1;
+    for(let i=0;i<ROUNDS;i++){ let c; do{ c=Math.floor(Math.random()*6); }while(c===last); state.deck.push(c); last=c; }
+    state.popSpeed = state.popSpeed || 60;
+  }
+  else if(mode==="abc") state.deck = shuffle(WORDS[state.lang]).slice(0,ROUNDS);
+  else if(mode==="num") state.deck = shuffle([1,2,3,4,5,6,7,8,9,10]).slice(0,ROUNDS);
+  else if(mode==="spell"){
+    /* easy words first, harder (longer) words later */
+    const pool=shuffle(SPELL[state.lang]);
+    state.deck = pool.slice(0,ROUNDS).sort((a,b)=>a[2].length-b[2].length || a[0].length-b[0].length);
+  }
+  state.reviewed = new Set();
+  $("score").textContent=0;
+  show("game"); nextQuestion();
+}
+
+function nextQuestion(){
+  if(state.round>=state.deck.length) return endGame();
+  if(!state.unlocked && state.round>=FREE_QUESTIONS) return showLock(true);
+  state.firstTry=true; state.locked=false;
+  $("bar").style.width=(state.round/state.deck.length*100)+"%";
+  const isField = ["pop","race","arch","trace"].includes(state.mode);
+  $("field").style.display = isField?"block":"none";
+  $("answers").style.display = isField?"none":"";
+  $("answers").className = "answers";
+  if(state.mode==="pop") return renderPop();
+  if(state.mode==="race") return renderRace();
+  if(state.mode==="arch") return renderArch();
+  if(state.mode==="trace") return renderTrace();
+  if(state.mode==="memory") return renderMemory();
+  if(state.mode==="shape" || state.mode==="pattern") return renderPick();
+  const T=TEXT[state.lang];
+  let correct, options;
+
+  if(state.mode==="abc"){
+    const [word,emoji]=state.deck[state.round];
+    correct=word[0].toUpperCase();
+    state.current={word,correct};
+    $("question").textContent=T.qAbc;
+    $("picture").className="picture"; $("picture").textContent=emoji;
+    $("word").innerHTML=`<span class="hidden-first">${correct}</span>${word.slice(1).toUpperCase()}`;
+    const letters=[...new Set(WORDS[state.lang].map(w=>w[0][0].toUpperCase()))].filter(l=>l!==correct);
+    options=shuffle([correct,...shuffle(letters).slice(0,2)]);
+  } else if(state.mode==="spell"){
+    return renderSpell();
+  } else {
+    const n=state.deck[state.round], item=COUNT_ITEMS[Math.floor(Math.random()*COUNT_ITEMS.length)];
+    correct=String(n);
+    state.current={n,correct};
+    $("question").textContent=T.qNum;
+    $("picture").className="picture small"; $("picture").textContent=item.repeat(n);
+    $("word").textContent="";
+    const others=shuffle([1,2,3,4,5,6,7,8,9,10].filter(x=>x!==n && Math.abs(x-n)<=3)).slice(0,2);
+    options=shuffle([correct,...others.map(String)]);
+  }
+
+  $("answers").innerHTML="";
+  options.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="btn ans"; b.textContent=o;
+    b.onclick=()=>choose(b,o);
+    $("answers").appendChild(b);
+  });
+  setTimeout(sayQuestion,350);
+}
+
+function sayQuestion(){
+  const T=TEXT[state.lang];
+  if(state.mode==="abc") speak(state.current.word+". "+T.qAbc);
+  else if(state.mode==="spell") speak(T.qSpell+" "+state.current.word);
+  else if(state.mode==="arch") speak(T.archQ[state.current.type]+" "+NUM_WORDS[state.lang][state.current.base]);
+  else if(state.mode==="memory") speak(T.memQ);
+  else if(state.mode==="shape") speak(T.shapeQ+" "+state.current.name.toLowerCase());
+  else if(state.mode==="pattern") speak(T.patQ);
+  else if(state.mode==="trace") speak(T.traceQ);
+  else if(state.mode==="race") speak(T.raceQ[state.current.type]+" "+state.current.say);
+  else if(state.mode==="pop") speak(T.popQ(COLORS[state.lang][state.current.ci][0].toLowerCase()));
+  else speak(T.qNum);
+}
+
+function choose(btn,val){
+  if(state.locked || btn.classList.contains("wrong")) return;
+  const T=TEXT[state.lang];
+  if(val===state.current.correct){
+    state.locked=true;
+    btn.classList.add("right");
+    if(state.firstTry){ state.score++; $("score").textContent=state.score; }
+    if(state.mode==="abc"){
+      $("word").innerHTML=`<span class="first">${state.current.correct}</span>${state.current.word.slice(1).toUpperCase()}`;
+      speak(`${state.current.correct}. ${state.current.word}! ${T.good[Math.floor(Math.random()*4)]}`);
+    } else if(state.mode==="num"){
+      speak(`${NUM_WORDS[state.lang][state.current.n]}! ${T.good[Math.floor(Math.random()*4)]}`);
+    } else {
+      if(state.mode==="pattern") $("picture").innerHTML=state.current.seqDone;
+      speak(`${state.current.sayOk||""} ${T.good[Math.floor(Math.random()*4)]}`);
+    }
+    happySound(); confetti();
+    state.round++;
+    setTimeout(nextQuestion,1900);
+  } else {
+    if(state.firstTry) reviewLater();
+    state.firstTry=false;
+    btn.classList.add("wrong"); sadSound(); speak(T.tryAgain);
+  }
+}
+
+function endGame(){
+  stopPop();
+  $("bar").style.width="100%";
+  const T=TEXT[state.lang], s=state.score;
+  const p0=s/state.deck.length;
+  $("endEmoji").textContent = p0>=0.8?"🏆":p0>=0.5?"🥳":"💪";
+  $("endTitle").textContent = p0>=0.8?T.endGreat:p0>=0.5?T.endOk:T.endTry;
+  const total=state.deck.length, pct=s/total;
+  $("endStars").textContent = "⭐".repeat(Math.max(1,Math.round(pct*5)));
+  $("endText").textContent = T.endText(s,total);
+  $("againBtn").textContent = T.again;
+  show("end"); confetti(); happySound();
+  speak($("endTitle").textContent+" "+T.endText(s,state.deck.length));
+}
+
+/* ---------- learning boost: missed items come back later ---------- */
+function reviewLater(){
+  const item=state.deck[state.round], key=JSON.stringify(item);
+  if(state.reviewed.has(key) || state.deck.length>=ROUNDS+3) return;
+  state.reviewed.add(key);
+  state.deck.splice(Math.min(state.round+4,state.deck.length),0,item);
+}
+
+/* ---------- spelling game ---------- */
+function renderSpell(){
+  const T=TEXT[state.lang];
+  const [word,emoji,parts]=state.deck[state.round];
+  state.current={word,parts,idx:0,correct:null};
+  $("question").textContent=T.qSpell;
+  $("picture").className="picture"; $("picture").textContent=emoji;
+  $("word").innerHTML='<div class="slots">'+parts.map(()=>'<span class="slot">&nbsp;</span>').join("")+'</div>';
+  /* pieces + 2 distractors */
+  let extras;
+  if(state.lang==="ms"){
+    const all=[...new Set(SPELL.ms.flatMap(w=>w[2]))].filter(x=>!parts.includes(x));
+    extras=shuffle(all).slice(0,2);
+  } else {
+    const abc="abcdefghijklmnoprstuw".split("").filter(x=>!parts.includes(x));
+    extras=shuffle(abc).slice(0,2);
+  }
+  const tiles=shuffle([...parts,...extras]);
+  $("answers").innerHTML="";
+  tiles.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="btn ans tile"; b.textContent=t;
+    b.onclick=()=>chooseTile(b,t);
+    $("answers").appendChild(b);
+  });
+  setTimeout(sayQuestion,350);
+}
+
+function chooseTile(btn,val){
+  if(state.locked) return;
+  const T=TEXT[state.lang], c=state.current;
+  if(val===c.parts[c.idx]){
+    btn.classList.add("used");
+    const slot=document.querySelectorAll("#word .slot")[c.idx];
+    slot.textContent=val; slot.classList.add("filled");
+    c.idx++;
+    if(c.idx===c.parts.length){
+      state.locked=true;
+      if(state.firstTry){ state.score++; $("score").textContent=state.score; }
+      speak(`${c.word}! ${T.good[Math.floor(Math.random()*4)]}`);
+      happySound(); confetti();
+      state.round++;
+      setTimeout(nextQuestion,2000);
+    } else {
+      speak(val); beep([660],0.08,"triangle");
+    }
+  } else {
+    if(state.firstTry) reviewLater();
+    state.firstTry=false;
+    btn.classList.remove("wrong"); void btn.offsetWidth; btn.classList.add("wrong");
+    setTimeout(()=>btn.classList.remove("wrong"),450);
+    sadSound(); speak(T.tryAgain);
+  }
+}
+
+/* ---------- balloon game (hand-eye coordination + colours) ---------- */
+let popRAF=null;
+function stopPop(){
+  state.popActive=false;
+  if(popRAF) cancelAnimationFrame(popRAF); popRAF=null;
+  const f=$("field"); if(f) f.innerHTML="";
+}
+function renderPop(){
+  stopPop();
+  const T=TEXT[state.lang], ci=state.deck[state.round], [name,hex]=COLORS[state.lang][ci];
+  state.current={ci, got:0, wrong:0, correct:null, start:performance.now()};
+  state.locked=false;
+  $("question").textContent=T.popTitle;
+  $("picture").className="picture popname"; $("picture").innerHTML=`<span style="color:${hex}">${name}</span>`;
+  $("word").innerHTML=`<span class="dots">${"○".repeat(POP_NEED)}</span>`;
+  state.popActive=true; state.balloons=[]; state.lastSpawn=0; state.lastT=null;
+  popRAF=requestAnimationFrame(popLoop);
+  setTimeout(sayQuestion,300);
+}
+function spawnBalloon(){
+  const f=$("field"), w=f.clientWidth, h=f.clientHeight, cur=state.current;
+  const hasTarget=state.balloons.some(b=>b.ci===cur.ci && !b.dead);
+  let ci;
+  if(!hasTarget || Math.random()<0.4) ci=cur.ci;
+  else { do{ ci=Math.floor(Math.random()*6); }while(ci===cur.ci); }
+  const el=document.createElement("div");
+  el.className="balloon"; el.style.background=COLORS.ms[ci][1];
+  const b={el, ci, x0:8+Math.random()*Math.max(10,w-92), y:h+10, phase:Math.random()*6, dead:false};
+  el.addEventListener("pointerdown",e=>{ e.preventDefault(); popBalloon(b); });
+  f.appendChild(el); state.balloons.push(b);
+}
+function popLoop(t){
+  if(!state.popActive) return;
+  const dt = state.lastT==null ? 0 : Math.min(0.05,(t-state.lastT)/1000);
+  state.lastT=t;
+  const spawnEvery = Math.max(420, 1150 - state.popSpeed*4);
+  if(!state.locked && t-state.lastSpawn>spawnEvery){ spawnBalloon(); state.lastSpawn=t; }
+  state.balloons.forEach(b=>{
+    if(b.dead) return;
+    b.y -= state.popSpeed*dt;
+    const x = b.x0 + Math.sin(t/650+b.phase)*12;
+    const tr=`translate(${x}px,${b.y}px)`;
+    b.el.style.transform=tr; b.el.style.setProperty("--t",tr);
+    if(b.y < -150){ b.dead=true; b.el.remove(); }
+  });
+  state.balloons=state.balloons.filter(b=>!b.dead || b.el.isConnected);
+  popRAF=requestAnimationFrame(popLoop);
+}
+function popBalloon(b){
+  if(b.dead || state.locked) return;
+  const T=TEXT[state.lang], cur=state.current;
+  if(b.ci===cur.ci){
+    b.dead=true; b.el.classList.add("popped"); setTimeout(()=>b.el.remove(),230);
+    cur.got++;
+    $("word").innerHTML=`<span class="dots">${"●".repeat(cur.got)}${"○".repeat(POP_NEED-cur.got)}</span>`;
+    beep([700+cur.got*120],0.09,"triangle");
+    if(cur.got>=POP_NEED){
+      state.locked=true;
+      state.firstTry = cur.wrong===0;
+      if(state.firstTry){ state.score++; $("score").textContent=state.score; }
+      /* adaptive speed: faster when doing well, slower when struggling */
+      const secs=(performance.now()-cur.start)/1000;
+      if(cur.wrong===0 && secs<9) state.popSpeed=Math.min(170,state.popSpeed*1.15);
+      else if(cur.wrong>=2 || secs>15) state.popSpeed=Math.max(45,state.popSpeed*0.85);
+      speak(T.good[Math.floor(Math.random()*4)]);
+      happySound(); confetti();
+      state.round++;
+      setTimeout(nextQuestion,1600);
+    } else {
+      speak(NUM_WORDS[state.lang][cur.got]);
+    }
+  } else {
+    cur.wrong++;
+    b.el.classList.add("nope");
+    sadSound();
+    speak(COLORS[state.lang][cur.ci][0].toLowerCase());
+  }
+}
+
+/* ---------- car race (steering coordination + letters, numbers, adding) ---------- */
+function makeRaceQuestion(type){
+  const r=n=>Math.floor(Math.random()*n);
+  let target, show, say, pool;
+  if(type==="letter"){
+    pool=[...new Set(WORDS[state.lang].map(w=>w[0][0].toUpperCase()))];
+    target=pool[r(pool.length)]; show=target; say=target;
+  } else if(type==="number"){
+    pool=[1,2,3,4,5,6,7,8,9,10].map(String);
+    target=pool[r(10)]; show=target; say=NUM_WORDS[state.lang][+target];
+  } else {
+    const a=1+r(4), b=1+r(4);
+    target=String(a+b); show=`${a} + ${b}`;
+    say=`${NUM_WORDS[state.lang][a]} ${TEXT[state.lang].plus} ${NUM_WORDS[state.lang][b]}`;
+    pool=[2,3,4,5,6,7,8].map(String);
+  }
+  return {type,target,show,say,pool};
+}
+function newGateRow(){
+  const cur=state.current, f=$("field");
+  const others=shuffle(cur.pool.filter(x=>x!==cur.target)).slice(0,2);
+  const opts=shuffle([cur.target,...others]);
+  const el=document.createElement("div"); el.className="gates";
+  el.innerHTML=opts.map(o=>`<div class="gate">${o}</div>`).join("");
+  f.appendChild(el);
+  state.row={el,opts,y:-70,done:false};
+}
+function placeCar(){ state.carEl.style.left=(state.lane*33.33)+"%"; }
+function steer(dir){
+  if(!state.popActive || state.mode!=="race") return;
+  state.lane=Math.max(0,Math.min(2,state.lane+dir)); placeCar();
+  beep([520+state.lane*80],0.05,"sine");
+}
+function renderRace(){
+  stopPop();
+  const T=TEXT[state.lang], type=state.deck[state.round];
+  state.current={...makeRaceQuestion(type), wrong:0, correct:null, start:performance.now()};
+  state.locked=false;
+  $("question").textContent=T.raceQ[type];
+  $("picture").className="picture popname"; $("picture").innerHTML=`<span style="color:var(--orange)">${state.current.show}</span>`;
+  $("word").textContent="";
+  const f=$("field");
+  f.innerHTML='<div class="road" id="road"></div><div class="hint" style="left:14px">◀</div><div class="hint" style="right:14px">▶</div><div class="car" id="car"><span>🏎️</span></div>';
+  state.carEl=$("car"); state.lane=1; placeCar();
+  state.roadY=0; state.row=null; state.lastT=null; state.nextRowAt=performance.now()+900;
+  state.popActive=true;
+  popRAF=requestAnimationFrame(raceLoop);
+  setTimeout(sayQuestion,300);
+}
+function raceLoop(t){
+  if(!state.popActive) return;
+  const dt = state.lastT==null ? 0 : Math.min(0.05,(t-state.lastT)/1000);
+  state.lastT=t;
+  const f=$("field"), h=f.clientHeight, sp=state.raceSpeed;
+  state.roadY=(state.roadY+sp*dt)%68;
+  $("road").style.backgroundPosition=`0 0,33.33% ${state.roadY}px,66.66% ${state.roadY}px`;
+  if(!state.row && !state.locked && performance.now()>state.nextRowAt) newGateRow();
+  const row=state.row;
+  if(row){
+    row.y+=sp*dt; row.el.style.top=row.y+"px";
+    const carTop=h-14-70;
+    if(!row.done && row.y+64>=carTop+18) resolveGate(row);
+    if(row.y>h){ row.el.remove(); state.row=null; state.nextRowAt=performance.now()+500; }
+  }
+  popRAF=requestAnimationFrame(raceLoop);
+}
+function resolveGate(row){
+  row.done=true;
+  const T=TEXT[state.lang], cur=state.current, picked=row.opts[state.lane];
+  const gate=row.el.children[state.lane];
+  if(picked===cur.target){
+    gate.classList.add("good");
+    state.locked=true;
+    state.firstTry = cur.wrong===0;
+    if(state.firstTry){ state.score++; $("score").textContent=state.score; }
+    const secs=(performance.now()-cur.start)/1000;
+    if(cur.wrong===0) state.raceSpeed=Math.min(170,state.raceSpeed*1.12);
+    else if(cur.wrong>=2 || secs>20) state.raceSpeed=Math.max(50,state.raceSpeed*0.85);
+    speak(T.good[Math.floor(Math.random()*4)]);
+    happySound(); confetti();
+    state.round++;
+    setTimeout(nextQuestion,1600);
+  } else {
+    cur.wrong++;
+    gate.classList.add("bad");
+    row.el.children[row.opts.indexOf(cur.target)].classList.add("good");
+    state.carEl.classList.remove("bump"); void state.carEl.offsetWidth; state.carEl.classList.add("bump");
+    sadSound(); speak(T.tryAgain);
+  }
+}
+
+/* ---------- shapes & patterns (pick 1 of 3) ---------- */
+function renderPick(){
+  const T=TEXT[state.lang], item=state.deck[state.round];
+  let correct, opts, html;
+  if(state.mode==="shape"){
+    const [id,ms,en]=item, name=state.lang==="ms"?ms:en;
+    state.current={correct:id, name, sayOk:name.toLowerCase()};
+    $("question").textContent=T.shapeQ;
+    $("picture").className="picture popname"; $("picture").innerHTML=`<span style="color:#3a86ff;font-size:.62em">${name}</span>`;
+    opts=shuffle([id,...shuffle(SHAPES.map(s=>s[0]).filter(x=>x!==id)).slice(0,2)]);
+    html=o=>shapeSVG(o,SHAPE_COLORS[Math.floor(Math.random()*SHAPE_COLORS.length)]);
+  } else {
+    const type=item, set=PAT_ITEMS[Math.floor(Math.random()*PAT_ITEMS.length)];
+    const unit=type.map(i=>set[i]), len=type.length===2?5:type.length===3?5:5;
+    const seq=Array.from({length:len+1},(_,i)=>unit[i%unit.length]);
+    const ans=seq[len];
+    state.current={correct:ans, sayOk:"", seqDone:`<span class="seq">${seq.join("")}</span>`};
+    $("question").textContent=T.patQ;
+    $("picture").className="picture small"; $("picture").innerHTML=`<span class="seq">${seq.slice(0,len).join("")}❓</span>`;
+    const pool=[...new Set([...set, ...PAT_ITEMS.flat()])].filter(x=>x!==ans);
+    opts=shuffle([ans, ...set.filter(x=>x!==ans).slice(0,2)]);
+    if(opts.length<3) opts=shuffle([...opts, ...shuffle(pool.filter(x=>!opts.includes(x))).slice(0,3-opts.length)]);
+    html=o=>o;
+  }
+  $("word").textContent="";
+  $("answers").innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="btn ans"; b.innerHTML=html(o);
+    b.onclick=()=>choose(b,o);
+    $("answers").appendChild(b);
+  });
+  setTimeout(sayQuestion,350);
+}
+
+/* ---------- memory: match picture to its first letter ---------- */
+function renderMemory(){
+  const T=TEXT[state.lang], pairs=state.deck[state.round];
+  const words=shuffle(WORDS[state.lang]);
+  const picked=[]; const used=new Set();
+  for(const w of words){ const L=w[0][0].toUpperCase(); if(!used.has(L)){ used.add(L); picked.push(w); } if(picked.length===pairs) break; }
+  const cards=shuffle(picked.flatMap((w,i)=>[{k:i,face:w[1],word:w[0]},{k:i,face:w[0][0].toUpperCase(),word:w[0]}]));
+  state.current={pairs, found:0, misses:0, open:[], correct:null};
+  $("question").textContent=T.memQ;
+  $("picture").className="picture small"; $("picture").textContent="🃏";
+  $("word").innerHTML=`<span class="dots">${"○".repeat(pairs)}</span>`;
+  $("answers").className="answers mem"; $("answers").innerHTML="";
+  cards.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="btn ans memcard"; b.textContent="?";
+    b.onclick=()=>flipCard(b,c);
+    $("answers").appendChild(b);
+  });
+  setTimeout(sayQuestion,350);
+}
+function flipCard(b,c){
+  const cur=state.current;
+  if(state.locked || b.classList.contains("open") || cur.open.length>=2) return;
+  b.classList.add("open"); b.textContent=c.face; beep([600],0.05);
+  cur.open.push({b,c});
+  if(cur.open.length<2) return;
+  const [x,y]=cur.open;
+  if(x.c.k===y.c.k){
+    setTimeout(()=>{
+      x.b.classList.add("done"); y.b.classList.add("done"); cur.open=[]; cur.found++;
+      $("word").innerHTML=`<span class="dots">${"●".repeat(cur.found)}${"○".repeat(cur.pairs-cur.found)}</span>`;
+      speak(`${x.c.word[0].toUpperCase()}. ${x.c.word}`); happySound();
+      if(cur.found===cur.pairs){
+        state.locked=true;
+        if(cur.misses<=cur.pairs){ state.score++; $("score").textContent=state.score; }
+        speak(TEXT[state.lang].good[Math.floor(Math.random()*4)]); confetti();
+        state.round++; setTimeout(nextQuestion,1800);
+      }
+    },350);
+  } else {
+    cur.misses++;
+    setTimeout(()=>{ [x,y].forEach(o=>{o.b.classList.remove("open"); o.b.textContent="?";}); cur.open=[]; },900);
+  }
+}
+
+/* ---------- archery: timing + number order ---------- */
+function renderArch(){
+  stopPop();
+  const T=TEXT[state.lang], type=state.deck[state.round];
+  const base = type==="after" ? 1+Math.floor(Math.random()*9) : 2+Math.floor(Math.random()*9);
+  const target = type==="after" ? base+1 : base-1;
+  const opts=shuffle([target, ...shuffle([1,2,3,4,5,6,7,8,9,10].filter(x=>x!==target && Math.abs(x-target)<=3)).slice(0,2)]);
+  state.current={type,base,target,opts,wrong:0,correct:null,start:performance.now(),flying:false};
+  state.locked=false;
+  $("question").textContent=T.archQ[type];
+  $("picture").className="picture popname"; $("picture").innerHTML=`<span style="color:#2d6a4f">${base}</span>`;
+  $("word").innerHTML=`<span style="font-size:1.1rem;letter-spacing:0">${T.tapShoot}</span>`;
+  const f=$("field");
+  f.innerHTML=opts.map((o,i)=>`<div class="target" style="left:${(i+.5)*33.33}%"><b>${o}</b></div>`).join("")+
+    '<div class="aimline" id="aim"></div><div class="bow" id="bow"><span>🏹</span></div>';
+  state.bowX=.5; state.lastT=null; state.popActive=true;
+  popRAF=requestAnimationFrame(archLoop);
+  setTimeout(sayQuestion,300);
+}
+function archLoop(t){
+  if(!state.popActive) return;
+  if(!state.current.flying){
+    state.bowX = .5 + .42*Math.sin(t/1000*state.archSpeed);
+    $("bow").style.left=(state.bowX*100)+"%"; $("aim").style.left=(state.bowX*100)+"%";
+  }
+  popRAF=requestAnimationFrame(archLoop);
+}
+function shoot(){
+  const cur=state.current; if(!state.popActive || state.locked || cur.flying) return;
+  cur.flying=true;
+  const f=$("field"), h=f.clientHeight, x=state.bowX;
+  const a=document.createElement("div"); a.className="arrow"; a.style.left=(x*100)+"%"; a.style.top=(h-70)+"px";
+  a.style.transition="top .32s linear"; f.appendChild(a);
+  beep([300,500],0.06,"sawtooth");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ a.style.top="46px"; }));
+  setTimeout(()=>{
+    const T=TEXT[state.lang];
+    const lane=Math.min(2,Math.floor(x*3)), center=(lane+.5)/3;
+    const hit = Math.abs(x-center)*f.clientWidth < 46;
+    if(!hit){ a.remove(); cur.flying=false; beep([200],0.1); return; }
+    const tg=f.querySelectorAll(".target")[lane];
+    tg.classList.add("hit");
+    if(cur.opts[lane]===cur.target){
+      state.locked=true;
+      state.firstTry=cur.wrong===0;
+      if(state.firstTry){ state.score++; $("score").textContent=state.score; }
+      if(cur.wrong===0) state.archSpeed=Math.min(3.4,state.archSpeed*1.12);
+      else if(cur.wrong>=2) state.archSpeed=Math.max(1.1,state.archSpeed*0.85);
+      speak(`${NUM_WORDS[state.lang][cur.target]}! ${T.good[Math.floor(Math.random()*4)]}`);
+      happySound(); confetti(); state.round++; setTimeout(nextQuestion,1600);
+    } else {
+      cur.wrong++; sadSound(); speak(T.tryAgain);
+      setTimeout(()=>{ a.remove(); tg.classList.remove("hit"); cur.flying=false; },600);
+    }
+  },340);
+}
+
+/* ---------- tracing: fine motor / pre-writing ---------- */
+function renderTrace(){
+  stopPop();
+  const T=TEXT[state.lang], [label,pts]=state.deck[state.round];
+  state.current={pts, next:0, correct:null, drawing:false, trail:[]};
+  state.locked=false;
+  $("question").textContent=T.traceQ;
+  $("picture").className="picture popname"; $("picture").innerHTML=`<span style="color:#6a4c93">${label}</span>`;
+  $("word").innerHTML=`<span class="dots">0%</span>`;
+  const f=$("field"); f.innerHTML='<canvas id="tc"></canvas>';
+  const c=$("tc"), dpr=window.devicePixelRatio||1;
+  c.width=f.clientWidth*dpr; c.height=f.clientHeight*dpr;
+  state.tctx=c.getContext("2d"); state.tctx.scale(dpr,dpr);
+  state.popActive=true;
+  drawTrace();
+  c.addEventListener("pointerdown",e=>{ e.preventDefault(); state.current.drawing=true; c.setPointerCapture&&c.setPointerCapture(e.pointerId); traceMove(e); });
+  c.addEventListener("pointermove",e=>{ if(state.current.drawing) traceMove(e); });
+  c.addEventListener("pointerup",()=>{ state.current.drawing=false; });
+  c.addEventListener("pointercancel",()=>{ state.current.drawing=false; });
+  setTimeout(sayQuestion,300);
+}
+function tracePx(p){ const f=$("field"); const w=f.clientWidth, h=f.clientHeight, m=Math.min(w,h);
+  return [ (w-m)/2 + p[0]*m, (h-m)/2 + p[1]*m ]; }
+function drawTrace(){
+  const ctx=state.tctx, cur=state.current, f=$("field");
+  ctx.clearRect(0,0,f.clientWidth,f.clientHeight);
+  const P=cur.pts.map(tracePx);
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  ctx.strokeStyle="rgba(255,255,255,.9)"; ctx.lineWidth=34; ctx.beginPath(); P.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p)); ctx.stroke();
+  ctx.setLineDash([10,12]); ctx.strokeStyle="#6a4c93"; ctx.lineWidth=5; ctx.stroke(); ctx.setLineDash([]);
+  if(cur.next>0){ ctx.strokeStyle="#52b788"; ctx.lineWidth=22; ctx.beginPath(); P.slice(0,cur.next).forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p)); ctx.stroke(); }
+  const nx=P[Math.min(cur.next,P.length-1)];
+  ctx.fillStyle="#fb8500"; ctx.beginPath(); ctx.arc(nx[0],nx[1],17,0,7); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.font="bold 18px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("👆",nx[0],nx[1]+1);
+  const end=P[P.length-1]; ctx.font="26px sans-serif"; ctx.fillText("⭐",end[0],end[1]-28);
+}
+function traceMove(e){
+  const cur=state.current; if(state.locked) return;
+  const r=$("tc").getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+  const P=cur.pts.map(tracePx); let moved=false;
+  for(let k=0;k<4 && cur.next<P.length;k++){
+    const p=P[cur.next]; if(Math.hypot(p[0]-x,p[1]-y)<32){ cur.next++; moved=true; } else break;
+  }
+  if(!moved) return;
+  if(cur.next%6===0) beep([400+cur.next*6],0.04,"sine");
+  $("word").innerHTML=`<span class="dots">${Math.round(cur.next/P.length*100)}%</span>`;
+  drawTrace();
+  if(cur.next>=P.length){
+    state.locked=true; state.score++; $("score").textContent=state.score;
+    speak(TEXT[state.lang].good[Math.floor(Math.random()*4)]); happySound(); confetti();
+    state.round++; setTimeout(nextQuestion,1500);
+  }
+}
+
+/* ---------- unlock code ---------- */
+function hashCode(str){ let h=5381; for(const c of str) h=(((h<<5)+h)+c.charCodeAt(0))>>>0; return h; }
+function normCode(s){ return (s||"").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+function updateLockUI(){
+  const T=TEXT[state.lang];
+  $("homeKey").style.display = state.unlocked?"none":"";
+  $("fullBadge").style.display = state.unlocked?"":"none";
+  $("homeKey").textContent=T.enterCode; $("fullBadge").textContent=T.full;
+  $("lockTitle").textContent=T.lockTitle; $("lockText").textContent=T.lockText;
+  $("unlockBtn").textContent=T.unlock; $("buyBtn").textContent=T.buy; $("buyBtn").href=BUY_LINK;
+}
+function showLock(fromGame){
+  stopPop();
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  state.resume=!!fromGame;
+  updateLockUI(); $("lockMsg").textContent=""; $("lockMsg").className="msg"; $("codeInput").value="";
+  show("lock");
+}
+function tryUnlock(){
+  const T=TEXT[state.lang];
+  if(hashCode(normCode($("codeInput").value))===CODE_HASH){
+    state.unlocked=true;
+    try{ localStorage.setItem("jb-unlocked","1"); }catch(e){}
+    $("lockMsg").textContent=T.okCode; $("lockMsg").className="msg ok";
+    updateLockUI(); happySound(); confetti();
+    setTimeout(()=>{ if(state.resume){ show("game"); nextQuestion(); } else goHome(); },1400);
+  } else {
+    $("lockMsg").textContent=T.badCode; $("lockMsg").className="msg bad"; sadSound();
+  }
+}
+$("codeInput").addEventListener("keydown",e=>{ if(e.key==="Enter") tryUnlock(); });
+
+/* ---------- race controls: tap left/right side, or arrow keys ---------- */
+$("field").addEventListener("pointerdown",e=>{
+  if(state.mode==="arch"){ e.preventDefault(); shoot(); return; }
+  if(state.mode!=="race") return;
+  e.preventDefault();
+  const r=$("field").getBoundingClientRect();
+  steer(e.clientX < r.left + r.width/2 ? -1 : 1);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft") steer(-1);
+  if(e.key==="ArrowRight") steer(1);
+  if(e.key===" " && state.mode==="arch") shoot();
+});
+
+/* ---------- init ---------- */
+try{ state.unlocked = localStorage.getItem("jb-unlocked")==="1"; }catch(e){}
+updateLockUI();
+$("footer").textContent = "© " + new Date().getFullYear() + " " + BRAND;
+try{ const l=localStorage.getItem("jb-lang"); if(l) setLang(l); }catch(e){}
+if("speechSynthesis" in window) speechSynthesis.onvoiceschanged = ()=>{};
+/* offline app support (works when hosted on https) */
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
